@@ -33,20 +33,20 @@ FILE* abrir_dados(){
 }
 
 
-indice_primario* criar_indice_primario(FILE *fp, int *tamanho){
+indice_primario* criar_indice_primario(FILE *fp, int *tamanho, int *capacidade){
     registro r1;
     indice_primario * vetor = (indice_primario*)malloc(10*sizeof(indice_primario));
     int rrn = 0; 
     int tamanho_atual = 0;
-    int capacidade = 10;
+    int capacidade_atual = 10;
     fseek(fp, sizeof(int), SEEK_SET);
     
     while (fread(&r1, sizeof(registro), 1, fp) == 1){
         
         if (r1.id != -1){
-            if (tamanho_atual == capacidade){
-                capacidade+=10;
-                vetor = (indice_primario*)realloc(vetor, capacidade*sizeof(indice_primario));
+            if (tamanho_atual == capacidade_atual){
+                capacidade_atual+=10;
+                vetor = (indice_primario*)realloc(vetor, capacidade_atual*sizeof(indice_primario));
             }
             
             vetor[tamanho_atual].id = r1.id;
@@ -56,6 +56,7 @@ indice_primario* criar_indice_primario(FILE *fp, int *tamanho){
         rrn++;
     }
     *tamanho = tamanho_atual;
+    *capacidade = capacidade_atual;
     return vetor;
 }
 
@@ -100,30 +101,39 @@ registro ler_dados(int code){
 }
 
 
-int adicionar_dados(FILE* fp){
+int adicionar_dados(FILE* fp, indice_primario **vetor, int *tamanho, int *capacidade){
     registro r1 = ler_dados(1);
     int head = verificar_cabeca(fp);
 
+    if ((*capacidade) == (*tamanho)){
+        (*capacidade)+=10;
+        *vetor = (indice_primario*)realloc(*vetor, (*capacidade)*sizeof(indice_primario));
+    }
+
     if (head == -1){
         fseek(fp, 0, SEEK_END);
+        long pos = ftell(fp);
+        int rrn = (pos - sizeof(int)) / sizeof(registro);
         fwrite(&r1, sizeof(registro), 1, fp);
+        (*vetor)[*tamanho].id = r1.id;
+        (*vetor)[*tamanho].rrn = rrn;
     }
     else{
         long offset = (head*sizeof(registro))+sizeof(int);
         fseek(fp, offset, SEEK_SET);
         registro removido;
         
-        fseek(fp, offset, SEEK_SET);
         fread(&removido, sizeof(registro), 1, fp);
         
         int next = removido.proximo_rrn;
         
         fseek(fp, offset, SEEK_SET);
         fwrite(&r1, sizeof(registro), 1, fp);
-        
+        (*vetor)[*tamanho].id = r1.id;
+        (*vetor)[*tamanho].rrn = head;
         atualizar_cabeca(fp, next);
     }
-        
+    (*tamanho)++;    
     printf("ESCRITA BEM SUCEDIDA\n");
         
     return 1;
@@ -151,14 +161,14 @@ int printar_registros(FILE *fp){
 
 
 
-int excluir_registro(FILE *fp, indice_primario* vetor, int tamanho){
+int excluir_registro(FILE *fp, indice_primario* vetor, int *tamanho){
     int encontrou = 0;
     int id;
     long offset;
     printf("Digite o ID do registro a ser excluido: ");
     scanf("%d", &id);
     
-    for (int i = 0; i<tamanho; i++){
+    for (int i = 0; i<*tamanho; i++){
         if (vetor[i].id == id){
             encontrou = 1;
             offset = (vetor[i].rrn * sizeof(registro)) + sizeof(int);
@@ -169,6 +179,13 @@ int excluir_registro(FILE *fp, indice_primario* vetor, int tamanho){
             fseek(fp, offset, SEEK_SET);
             fwrite(&r1, sizeof(registro), 1, fp);
             atualizar_cabeca(fp, rrn);
+            
+            for (int j = i; j < (*tamanho)-1; j++){
+                vetor[j] = vetor[j+1];
+            }
+            
+            
+            (*tamanho)--;
             break;
         }
     }
@@ -245,8 +262,8 @@ int ler_registro(FILE *fp, indice_primario* vetor, int tamanho){
 
 int main(void){
     FILE *fp = abrir_dados();
-    int tamanho;
-    indice_primario *vetor = criar_indice_primario(fp, &tamanho);
+    int tamanho, capacidade;
+    indice_primario *vetor = criar_indice_primario(fp, &tamanho, &capacidade);
     int escolha;
     int sair = 0;
     while(!sair){
@@ -256,8 +273,7 @@ int main(void){
         switch (escolha)
         {
         case 1:
-            adicionar_dados(fp);
-            free(vetor);
+            adicionar_dados(fp,&vetor,&tamanho, &capacidade);
             break;
         
         case 2:
@@ -269,8 +285,7 @@ int main(void){
             break;
         
         case 4:
-            excluir_registro(fp, vetor, tamanho);
-            free(vetor);
+            excluir_registro(fp, vetor, &tamanho);
             break;
 
         case 5:
