@@ -32,13 +32,13 @@ int main(void){
     while(!sair){
         printf("\n================ BIBLIOTECA ================\n");
         printf("1 - INSERIR\n");
-        printf("2 - BUSCAR POR ID (Chave Primaria)\n");
+        printf("2 - BUSCAR POR ID \n");
         printf("3 - ATUALIZAR\n");
         printf("4 - EXCLUIR\n");
         printf("5 - VER TODO O ACERVO\n");
         printf("6 - IMPRIMIR ARVORE B\n");
-        printf("7 - BUSCAR POR TITULO (Chave Secundaria)\n");
-        printf("8 - BUSCAR POR GENERO (Chave Secundaria)\n");
+        printf("7 - BUSCAR POR TITULO\n");
+        printf("8 - BUSCAR POR GENERO\n");
         printf("9 - SAIR\n");
         printf("============================================\n");
         printf("Escolha a operacao: ");
