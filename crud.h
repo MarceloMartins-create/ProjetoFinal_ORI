@@ -27,11 +27,7 @@ int excluir_registro(FILE *fp_dados, FILE *fp_indice, arvoreB *a1);
 int atualizar_registro(FILE *fp_dados, FILE *fp_indice, arvoreB *a1);
 int ler_registro(FILE *fp_dados, FILE *fp_indice, arvoreB *a1);
 
-// lvs
-void inicializar_indices_secundarios();
-int inserir_indice_secundario(const char* campo, const char* valor, int rrn_dado);
-int remover_indice_secundario(const char* campo, const char* valor, int rrn_dado);
-int buscar_por_secundaria(const char* campo, const char* valor);
+
 
 
 #endif
