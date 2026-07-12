@@ -44,6 +44,15 @@ int main(void){
             sair = 1;
             break;
 
+        // lvs
+        case 8:
+            char valor[50];
+            printf("Digite o autor/genero: ");
+            fgets(valor, sizeof(valor), stdin);
+            valor[strcspn(valor,"\n")] = 0;
+            buscar_por_secundaria("autor", valor);   // ou "genero"
+            break;
+
         default:
             printf("EM OBRAS");
             break;
