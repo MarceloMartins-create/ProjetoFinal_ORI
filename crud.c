@@ -216,6 +216,10 @@ int ler_registro(FILE *fp_dados, FILE *fp_indice, arvoreB *a1){
     printf("CHAVE1: %s\n", r1.chave1);
     printf("CHAVE2: %s\n", r1.chave2);
     printf("DESCRICAO: %s\n\n", r1.descricao);
+    
+    return 1;
+}
+
 
 //////////// NOVA FUNÇÃO ADICIONADA ////////////////////////////////
 
@@ -238,5 +242,63 @@ int realizar_vacuum(FILE **fp_dados, FILE **fp_indice, arvoreB *a1) {
         return 0;
     }
     
+    arvoreB nova_arvore;
+    nova_arvore.rrn_raiz = -1;
+    nova_arvore.num_nos = 0;
+    
+    fwrite(&nova_arvore.rrn_raiz, sizeof(int), 1, temp_indice);
+    fwrite(&nova_arvore.num_nos, sizeof(int), 1, temp_indice);
+    fflush(temp_indice);
+
+    registro r1;
+    int novo_rrn = 0;
+
+    fseek(*fp_dados, sizeof(int), SEEK_SET);
+
+    while (fread(&r1, sizeof(registro), 1, *fp_dados) == 1) { 
+        if (r1.id != -1) {
+            r1.proximo_rrn = -1;
+
+            fseek(temp_dados, sizeof(int) + (novo_rrn * sizeof(registro)), SEEK_SET);
+            fwrite(&r1, sizeof(registro), 1, temp_dados);
+
+            if (!inserir(temp_indice, &nova_arvore, r1.id, novo_rrn)) {
+                printf("Erro gravissimo: falha ao reinserir ID %d no novo indice.\n", r1.id);
+            }
+            novo_rrn++;
+        }
+    }
+
+    fclose(*fp_dados);
+    fclose(*fp_indice);
+    fclose(temp_dados);
+    fclose(temp_indice);
+
+    remove("dados.dat");
+    remove("indice_primario.dat");
+
+    if (rename("temp_dados.dat", "dados.dat") != 0) {
+        printf("Erro ao renomear arquivo de dados compactado.\n");
+        return 0;
+    }
+    if (rename("temp_indice.dat", "indice_primario.dat") != 0) {
+        printf("Erro ao renomear novo arquivo de indice.\n");
+        return 0;
+    }
+
+    *fp_dados = fopen("dados.dat", "rb+");
+    *fp_indice = fopen("indice_primario.dat", "rb+");
+
+    if (*fp_dados == NULL || *fp_indice == NULL) {
+        printf("Erro fatal ao reabrir os arquivos pos-vacuum!\n");
+        exit(1);
+    }
+
+    a1->rrn_raiz = nova_arvore.rrn_raiz;
+    a1->num_nos = nova_arvore.num_nos;
+
+    printf("Vacuum concluido com sucesso! Disco desfragmentado e indices recriados.\n");
+    printf("Registros ativos movidos: %d\n\n", novo_rrn);
+
     return 1;
 }
