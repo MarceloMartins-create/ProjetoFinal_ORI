@@ -11,7 +11,7 @@ int main(void){
     int escolha;
     int sair = 0;
     while(!sair){
-        printf("Escolha a operacao 1 - INSERIR 2 - BUSCAR 3 - ATUALIZAR 4 - EXCLUIR 5 - VER TODO O ACERVO 6 - imprimir arvoreB 7 - sair\n");
+        printf("Escolha a operacao 1 - INSERIR 2 - BUSCAR 3 - ATUALIZAR 4 - EXCLUIR 5 - VER TODO O ACERVO 6 - imprimir arvoreB 7 - VACUUM (Desfragmentar) 8 - Sair\n");
         scanf("%d", &escolha);
         getchar();
         switch (escolha)
@@ -41,6 +41,10 @@ int main(void){
             break;
         
         case 7:
+            realizar_vacuum(&fp_dados, &fp_indice, &a1);
+            break;
+
+        case 8:
             sair = 1;
             break;
 
