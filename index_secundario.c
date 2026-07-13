@@ -184,12 +184,10 @@ void buscar_e_printar_por_chave_secundaria(FILE *fp_idx, FILE *fp_list, FILE *fp
             fseek(fp_dados, offset, SEEK_SET);
             registro r;
             if (fread(&r, sizeof(registro), 1, fp_dados) == 1 && r.id != -1) {
-                printf("ISBN: %d\n", r.id);
-                printf("TITULO: %s\n", r.titulo);
-                printf("AUTOR: %s\n", r.autor);
-                printf("GENERO: %s\n", r.genero);
-                printf("EDITORA: %s\n", r.editora);
-                printf("ANO: %d\n", r.ano);
+                printf("ID: %d\n", r.id);
+                printf("TITULO: %s\n", r.chave1);
+                printf("GENERO: %s\n", r.chave2);
+                printf("DESCRICAO: %s\n", r.descricao);
                 printf("------------------------------------\n");
                 count++;
             }

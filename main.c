@@ -21,9 +21,9 @@ int main(void){
     FILE *fp_dados = abrir_dados();
     FILE *fp_indice = abrir_arquivo(&a1);
     
-    // abrindo os 4 arquivos de indices secundarios (autor e genero)
-    FILE *fp_idx_autor = abrir_arquivo_secundario("idx_autor.dat");
-    FILE *fp_list_autor = abrir_arquivo_secundario("list_autor.dat");
+    // abrindo os 4 novos arquivos para título e genero
+    FILE *fp_idx_titulo = abrir_arquivo_secundario("idx_titulo.dat");
+    FILE *fp_list_titulo = abrir_arquivo_secundario("list_titulo.dat");
     FILE *fp_idx_genero = abrir_arquivo_secundario("idx_genero.dat");
     FILE *fp_list_genero = abrir_arquivo_secundario("list_genero.dat");
 
@@ -37,9 +37,10 @@ int main(void){
         printf("4 - EXCLUIR\n");
         printf("5 - VER TODO O ACERVO\n");
         printf("6 - IMPRIMIR ARVORE B\n");
-        printf("7 - BUSCAR POR AUTOR\n");
+        printf("7 - BUSCAR POR TITULO\n");
         printf("8 - BUSCAR POR GENERO\n");
-        printf("9 - SAIR\n");
+        printf("9 - VACUUM (Desfragmentar disco)\n");
+        printf("10 - SAIR\n");
         printf("============================================\n");
         printf("Escolha a operacao: ");
         scanf("%d", &escolha);
@@ -50,19 +51,19 @@ int main(void){
         switch (escolha)
         {
         case 1:
-            adicionar_dados(fp_dados, fp_indice, &a1, fp_idx_autor, fp_list_autor, fp_idx_genero, fp_list_genero);
+            adicionar_dados(fp_dados, fp_indice, &a1, fp_idx_titulo, fp_list_titulo, fp_idx_genero, fp_list_genero);
             break;
-
+        
         case 2:
             ler_registro(fp_dados, fp_indice, &a1);
             break;
-
+        
         case 3:
-            atualizar_registro(fp_dados, fp_indice, &a1, fp_idx_autor, fp_list_autor, fp_idx_genero, fp_list_genero);
+            atualizar_registro(fp_dados, fp_indice, &a1, fp_idx_titulo, fp_list_titulo, fp_idx_genero, fp_list_genero);
             break;
-
+        
         case 4:
-            excluir_registro(fp_dados, fp_indice, &a1, fp_idx_autor, fp_list_autor, fp_idx_genero, fp_list_genero);
+            excluir_registro(fp_dados, fp_indice, &a1, fp_idx_titulo, fp_list_titulo, fp_idx_genero, fp_list_genero);
             break;
 
         case 5:
@@ -74,10 +75,10 @@ int main(void){
             break;
         
         case 7:
-            printf("Digite o autor para busca: ");
+            printf("Digite o titulo para busca: ");
             fgets(termo_busca, sizeof(termo_busca), stdin);
             termo_busca[strcspn(termo_busca, "\n")] = '\0';
-            buscar_e_printar_por_chave_secundaria(fp_idx_autor, fp_list_autor, fp_dados, termo_busca);
+            buscar_e_printar_por_chave_secundaria(fp_idx_titulo, fp_list_titulo, fp_dados, termo_busca);
             break;
 
         case 8:
@@ -88,6 +89,10 @@ int main(void){
             break;
             
         case 9:
+            realizar_vacuum(&fp_dados, &fp_indice, &a1, &fp_idx_titulo, &fp_list_titulo, &fp_idx_genero, &fp_list_genero);
+            break;
+
+        case 10:
             sair = 1;
             break;
 
@@ -100,8 +105,8 @@ int main(void){
     // Fechando todos os arquivos para garantir a persistência em disco
     fclose(fp_dados);
     fclose(fp_indice);
-    fclose(fp_idx_autor);
-    fclose(fp_list_autor);
+    fclose(fp_idx_titulo);
+    fclose(fp_list_titulo);
     fclose(fp_idx_genero);
     fclose(fp_list_genero);
 

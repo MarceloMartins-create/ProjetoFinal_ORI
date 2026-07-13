@@ -37,37 +37,29 @@ int atualizar_cabeca(FILE *fp_dados, int rrn){
 registro ler_dados(int code){
     registro r1;
     if (code == 1){
-        printf("Digite o ISBN (numero): ");
+        printf("Digite o id do livro: ");
         scanf("%d", &r1.id);
         getchar();
     }
-
+    
     printf("Digite o titulo: ");
-    fgets(r1.titulo, sizeof(r1.titulo), stdin);
-    r1.titulo[strcspn(r1.titulo, "\n")] = '\0';
-
-    printf("Digite o autor: ");
-    fgets(r1.autor, sizeof(r1.autor), stdin);
-    r1.autor[strcspn(r1.autor, "\n")] = '\0';
-
+    fgets(r1.chave1, sizeof(r1.chave1), stdin);
+    r1.chave1[strcspn(r1.chave1, "\n")] = '\0';
+    
     printf("Digite o genero: ");
-    fgets(r1.genero, sizeof(r1.genero), stdin);
-    r1.genero[strcspn(r1.genero, "\n")] = '\0';
-
-    printf("Digite a editora: ");
-    fgets(r1.editora, sizeof(r1.editora), stdin);
-    r1.editora[strcspn(r1.editora, "\n")] = '\0';
-
-    printf("Digite o ano de publicacao: ");
-    scanf("%d", &r1.ano);
-    getchar();
-    printf("\n");
-
+    fgets(r1.chave2, sizeof(r1.chave2), stdin);
+    r1.chave2[strcspn(r1.chave2, "\n")] = '\0';
+    
+    printf("Digite a descricao: ");
+    fgets(r1.descricao, sizeof(r1.descricao), stdin);
+    r1.descricao[strcspn(r1.descricao, "\n")] = '\0';
+    printf("\n");    
+    
     r1.proximo_rrn = -1;
     return r1;
 }
 
-int adicionar_dados(FILE* fp_dados, FILE* fp_indice, arvoreB* a1, FILE *fp_idx_autor, FILE *fp_list_autor, FILE *fp_idx_genero, FILE *fp_list_genero){
+int adicionar_dados(FILE* fp_dados, FILE* fp_indice, arvoreB* a1, FILE *fp_idx_titulo, FILE *fp_list_titulo, FILE *fp_idx_genero, FILE *fp_list_genero){
     registro r1 = ler_dados(1);
     int rrn;
 
@@ -88,8 +80,8 @@ int adicionar_dados(FILE* fp_dados, FILE* fp_indice, arvoreB* a1, FILE *fp_idx_a
         }
         
         // inserção dos indices secundarios
-        inserir_indice_secundario(fp_idx_autor, fp_list_autor, r1.autor, novo_rrn);
-        inserir_indice_secundario(fp_idx_genero, fp_list_genero, r1.genero, novo_rrn);
+        inserir_indice_secundario(fp_idx_titulo, fp_list_titulo, r1.chave1, novo_rrn);
+        inserir_indice_secundario(fp_idx_genero, fp_list_genero, r1.chave2, novo_rrn);
     }
     else{
         long offset = (head*sizeof(registro))+sizeof(int);
@@ -112,8 +104,8 @@ int adicionar_dados(FILE* fp_dados, FILE* fp_indice, arvoreB* a1, FILE *fp_idx_a
         }
 
         // index_sec aproveitando RRN da LED
-        inserir_indice_secundario(fp_idx_autor, fp_list_autor, r1.autor, head);
-        inserir_indice_secundario(fp_idx_genero, fp_list_genero, r1.genero, head);
+        inserir_indice_secundario(fp_idx_titulo, fp_list_titulo, r1.chave1, head);
+        inserir_indice_secundario(fp_idx_genero, fp_list_genero, r1.chave2, head);
     }
  
     printf("LIVRO INSERIDO COM SUCESSO\n");
@@ -125,22 +117,27 @@ int printar_registros(FILE *fp_dados){
     registro r1;
     fseek(fp_dados, sizeof(int), SEEK_SET);
     while (fread(&r1, sizeof(registro), 1, fp_dados)==1){
-        if (r1.id == -1) continue;
-        printf("ISBN: %d\n", r1.id);
-        printf("TITULO: %s\n", r1.titulo);
-        printf("AUTOR: %s\n", r1.autor);
-        printf("GENERO: %s\n", r1.genero);
-        printf("EDITORA: %s\n", r1.editora);
-        printf("ANO: %d\n", r1.ano);
-        printf("------------------------------------\n");
+        if (r1.id == -1){
+            continue;
+        }
+        printf("ID: ");
+        printf("%d\n", r1.id);
+        printf("TITULO: ");
+        printf("%s\n", r1.chave1);
+        printf("GENERO: ");
+        printf("%s\n", r1.chave2);
+        printf("DESCRICAO: ");
+        printf("%s\n", r1.descricao);
+        printf("\n");
     }
     return 1;
 }
 
-int excluir_registro(FILE *fp_dados, FILE *fp_indice, arvoreB *a1, FILE *fp_idx_autor, FILE *fp_list_autor, FILE *fp_idx_genero, FILE *fp_list_genero){
+int excluir_registro(FILE *fp_dados, FILE *fp_indice, arvoreB *a1, FILE *fp_idx_titulo, FILE *fp_list_titulo, FILE *fp_idx_genero, FILE *fp_list_genero){
     int id;
     printf("Digite o ID do livro a ser excluido: ");
     scanf("%d", &id);
+    getchar();
     
     int rrn;
     if (!buscar(fp_indice, a1, id, &rrn)){
@@ -156,8 +153,8 @@ int excluir_registro(FILE *fp_dados, FILE *fp_indice, arvoreB *a1, FILE *fp_idx_
     fread(&antigo, sizeof(registro), 1, fp_dados);
 
     // remoção das listas invertidas
-    remover_indice_secundario(fp_idx_autor, fp_list_autor, antigo.autor, rrn);
-    remover_indice_secundario(fp_idx_genero, fp_list_genero, antigo.genero, rrn);
+    remover_indice_secundario(fp_idx_titulo, fp_list_titulo, antigo.chave1, rrn);
+    remover_indice_secundario(fp_idx_genero, fp_list_genero, antigo.chave2, rrn);
 
     
     registro r1 = {0};
@@ -177,7 +174,7 @@ int excluir_registro(FILE *fp_dados, FILE *fp_indice, arvoreB *a1, FILE *fp_idx_
     return 1;
 }
 
-int atualizar_registro(FILE *fp_dados, FILE *fp_indice, arvoreB *a1, FILE *fp_idx_autor, FILE *fp_list_autor, FILE *fp_idx_genero, FILE *fp_list_genero){
+int atualizar_registro(FILE *fp_dados, FILE *fp_indice, arvoreB *a1, FILE *fp_idx_titulo, FILE *fp_list_titulo, FILE *fp_idx_genero, FILE *fp_list_genero){
     int id;
     int rrn;
     printf("Digite o ID do livro a ser atualizado: ");
@@ -199,16 +196,16 @@ int atualizar_registro(FILE *fp_dados, FILE *fp_indice, arvoreB *a1, FILE *fp_id
     r1.id = antigo.id;
     r1.proximo_rrn = antigo.proximo_rrn; 
 
-    // atualização do indice de autor
-    if (strcmp(antigo.autor, r1.autor) != 0) {
-        remover_indice_secundario(fp_idx_autor, fp_list_autor, antigo.autor, rrn);
-        inserir_indice_secundario(fp_idx_autor, fp_list_autor, r1.autor, rrn);
+    //atualização de titulo 
+    if (strcmp(antigo.chave1, r1.chave1) != 0) {
+        remover_indice_secundario(fp_idx_titulo, fp_list_titulo, antigo.chave1, rrn);
+        inserir_indice_secundario(fp_idx_titulo, fp_list_titulo, r1.chave1, rrn);
     }
 
-    // atualização do indice de genero
-    if (strcmp(antigo.genero, r1.genero) != 0) {
-        remover_indice_secundario(fp_idx_genero, fp_list_genero, antigo.genero, rrn);
-        inserir_indice_secundario(fp_idx_genero, fp_list_genero, r1.genero, rrn);
+    // atualização de genero
+    if (strcmp(antigo.chave2, r1.chave2) != 0) {
+        remover_indice_secundario(fp_idx_genero, fp_list_genero, antigo.chave2, rrn);
+        inserir_indice_secundario(fp_idx_genero, fp_list_genero, r1.chave2, rrn);
     }
 
     fseek(fp_dados, offset, SEEK_SET);
@@ -235,12 +232,101 @@ int ler_registro(FILE *fp_dados, FILE *fp_indice, arvoreB *a1){
     fseek(fp_dados, offset, SEEK_SET);
     fread(&r1, sizeof(registro), 1, fp_dados);
 
-    printf("ISBN: %d\n", r1.id);
-    printf("TITULO: %s\n", r1.titulo);
-    printf("AUTOR: %s\n", r1.autor);
-    printf("GENERO: %s\n", r1.genero);
-    printf("EDITORA: %s\n", r1.editora);
-    printf("ANO: %d\n\n", r1.ano);
-    
+    printf("ID: %d\n", r1.id);
+    printf("TITULO: %s\n", r1.chave1);
+    printf("GENERO: %s\n", r1.chave2);
+    printf("DESCRICAO: %s\n\n", r1.descricao);
+
+    return 1;
+}
+
+// ====================== VACUUM ======================
+int realizar_vacuum(FILE **fp_dados, FILE **fp_indice, arvoreB *a1,
+                    FILE **fp_idx_titulo, FILE **fp_list_titulo,
+                    FILE **fp_idx_genero, FILE **fp_list_genero) {
+    printf("INICIANDO PROCESSO DE DESFRAGMENTACAO (VACUUM)...\n");
+
+    // Arquivos temporários para dados e índice primário
+    FILE *temp_dados = fopen("temp_dados.dat", "wb+");
+    FILE *temp_indice = fopen("temp_indice.dat", "wb+");
+    FILE *temp_idx_titulo = fopen("temp_idx_titulo.dat", "wb+");
+    FILE *temp_list_titulo = fopen("temp_list_titulo.dat", "wb+");
+    FILE *temp_idx_genero = fopen("temp_idx_genero.dat", "wb+");
+    FILE *temp_list_genero = fopen("temp_list_genero.dat", "wb+");
+
+    if (!temp_dados || !temp_indice || !temp_idx_titulo ||
+        !temp_list_titulo || !temp_idx_genero || !temp_list_genero) {
+        printf("ERRO AO CRIAR ARQUIVOS TEMPORARIOS.\n");
+        return 0;
+    }
+
+    // Inicializa cabeças dos arquivos temporários
+    int neg = -1;
+    fwrite(&neg, sizeof(int), 1, temp_dados);   // LED vazia
+
+    arvoreB nova_arvore;
+    nova_arvore.rrn_raiz = -1;
+    nova_arvore.num_nos = 0;
+    fwrite(&nova_arvore.rrn_raiz, sizeof(int), 1, temp_indice);
+    fwrite(&nova_arvore.num_nos, sizeof(int), 1, temp_indice);
+    fflush(temp_indice);
+
+    // Varre dados.dat e reinsere apenas registros ativos
+    registro r1;
+    int novo_rrn = 0;
+    fseek(*fp_dados, sizeof(int), SEEK_SET);
+
+    while (fread(&r1, sizeof(registro), 1, *fp_dados) == 1) {
+        if (r1.id != -1) {
+            r1.proximo_rrn = -1;
+
+            fseek(temp_dados, sizeof(int) + novo_rrn * sizeof(registro), SEEK_SET);
+            fwrite(&r1, sizeof(registro), 1, temp_dados);
+
+            if (!inserir(temp_indice, &nova_arvore, r1.id, novo_rrn))
+                printf("ERRO AO REINSERIR ID %d NO NOVO INDICE.\n", r1.id);
+
+            // Reconstrói índices secundários com novos RRNs
+            inserir_indice_secundario(temp_idx_titulo, temp_list_titulo, r1.chave1, novo_rrn);
+            inserir_indice_secundario(temp_idx_genero, temp_list_genero, r1.chave2, novo_rrn);
+
+            novo_rrn++;
+        }
+    }
+
+    // Fecha tudo antes de substituir
+    fclose(*fp_dados);       fclose(*fp_indice);
+    fclose(*fp_idx_titulo);  fclose(*fp_list_titulo);
+    fclose(*fp_idx_genero);  fclose(*fp_list_genero);
+    fclose(temp_dados);      fclose(temp_indice);
+    fclose(temp_idx_titulo); fclose(temp_list_titulo);
+    fclose(temp_idx_genero); fclose(temp_list_genero);
+
+    // Substitui arquivos originais
+    remove("dados.dat");            rename("temp_dados.dat",      "dados.dat");
+    remove("indice_primario.dat");  rename("temp_indice.dat",     "indice_primario.dat");
+    remove("idx_titulo.dat");       rename("temp_idx_titulo.dat", "idx_titulo.dat");
+    remove("list_titulo.dat");      rename("temp_list_titulo.dat","list_titulo.dat");
+    remove("idx_genero.dat");       rename("temp_idx_genero.dat", "idx_genero.dat");
+    remove("list_genero.dat");      rename("temp_list_genero.dat","list_genero.dat");
+
+    // Reabre todos os arquivos
+    *fp_dados       = fopen("dados.dat",          "rb+");
+    *fp_indice      = fopen("indice_primario.dat", "rb+");
+    *fp_idx_titulo  = fopen("idx_titulo.dat",      "rb+");
+    *fp_list_titulo = fopen("list_titulo.dat",     "rb+");
+    *fp_idx_genero  = fopen("idx_genero.dat",      "rb+");
+    *fp_list_genero = fopen("list_genero.dat",     "rb+");
+
+    if (!*fp_dados || !*fp_indice || !*fp_idx_titulo ||
+        !*fp_list_titulo || !*fp_idx_genero || !*fp_list_genero) {
+        printf("ERRO FATAL AO REABRIR ARQUIVOS POS-VACUUM!\n");
+        exit(1);
+    }
+
+    a1->rrn_raiz = nova_arvore.rrn_raiz;
+    a1->num_nos  = nova_arvore.num_nos;
+
+    printf("VACUUM CONCLUIDO! %d registros compactados.\n\n", novo_rrn);
     return 1;
 }
