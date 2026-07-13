@@ -26,7 +26,7 @@ int printar_registros(FILE *fp_dados);
 int excluir_registro(FILE *fp_dados, FILE *fp_indice, arvoreB *a1);
 int atualizar_registro(FILE *fp_dados, FILE *fp_indice, arvoreB *a1);
 int ler_registro(FILE *fp_dados, FILE *fp_indice, arvoreB *a1);
-
+int realizar_vacuum(FILE **fp_dados, FILE **fp_indice, arvoreB *a1); // Função adicionada
 
 
 
