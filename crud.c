@@ -216,6 +216,27 @@ int ler_registro(FILE *fp_dados, FILE *fp_indice, arvoreB *a1){
     printf("CHAVE1: %s\n", r1.chave1);
     printf("CHAVE2: %s\n", r1.chave2);
     printf("DESCRICAO: %s\n\n", r1.descricao);
+
+//////////// NOVA FUNÇÃO ADICIONADA ////////////////////////////////
+
+int realizar_vacuum(FILE **fp_dados, FILE **fp_indice, arvoreB *a1) {
+    printf("Iniciando processo de desfragmentacao (Vacuum)...\n");
+
+    FILE *temp_dados = fopen("temp_dados.dat", "wb+");
+    if (temp_dados == NULL) {
+        printf("Erro ao criar arquivo temporario de dados.\n");
+        return 0;
+    }
+
+    int nova_cabeca = -1;
+    fwrite(&nova_cabeca, sizeof(int), 1, temp_dados);
+
+    FILE *temp_indice = fopen("temp_indice.dat", "wb+");
+    if (temp_indice == NULL) {
+        printf("Erro ao criar arquivo temporario de indice.\n");
+        fclose(temp_dados);
+        return 0;
+    }
     
     return 1;
 }
